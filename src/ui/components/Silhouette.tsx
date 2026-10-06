@@ -1,11 +1,11 @@
-import type { ReactNode } from 'react';
+import { memo, type ReactNode } from 'react';
 import type { Family } from '../../core/types';
 
 /**
  * Silhouette mignonne « grosse tête » dessinée en SVG, quand la photo manque ou ne charge pas.
  * Une variante par grande famille d'animaux (oreilles, bec, carapace…).
  */
-export function Silhouette({ fam, label }: { fam: Family; label?: string }) {
+export const Silhouette = memo(function Silhouette({ fam, label }: { fam: Family; label?: string }) {
   const fill = 'var(--sil-fill)';
   const ink = 'var(--sil-ink)';
   const extras: Record<Family, ReactNode> = {
@@ -117,4 +117,4 @@ export function Silhouette({ fam, label }: { fam: Family; label?: string }) {
       <circle cx="69" cy="54" r="4" fill="#ff8fb1" opacity="0.45" />
     </svg>
   );
-}
+});

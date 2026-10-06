@@ -1,11 +1,12 @@
 import { motion } from 'framer-motion';
 import { sfx } from '../../audio/sounds';
 import type { TabId } from '../ctx';
-import { IconChart, IconGear, IconList, IconPaw } from '../icons';
+import { IconChart, IconGear, IconList, IconMold, IconPaw } from '../icons';
 
 const TABS: { id: TabId; label: string; Icon: typeof IconPaw }[] = [
   { id: 'collection', label: 'Collection', Icon: IconPaw },
-  { id: 'lists', label: 'Mes listes', Icon: IconList },
+  { id: 'molds', label: 'Moules', Icon: IconMold },
+  { id: 'lists', label: 'Listes', Icon: IconList },
   { id: 'progress', label: 'Progrès', Icon: IconChart },
   { id: 'settings', label: 'Réglages', Icon: IconGear },
 ];

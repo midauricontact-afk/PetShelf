@@ -1,5 +1,5 @@
 import { lineOf } from './catalog';
-import type { Item, Pet } from './types';
+import type { Gen, Item, Mold, Pet } from './types';
 
 export interface Progress {
   have: number;
@@ -60,8 +60,16 @@ export function completedSeries(series: Map<string, Pet[]>, items: Map<string, I
   return [...series].filter(([, list]) => list.every((p) => items.get(p.id)?.have)).map(([k]) => k);
 }
 
-export function seriesCompletedBy(petId: string, series: Map<string, Pet[]>, items: Map<string, Item>): string[] {
-  return [...series].filter(([, list]) => list.some((p) => p.id === petId) && list.every((p) => items.get(p.id)?.have)).map(([k]) => k);
+/** Pour chaque figurine, les séries dont elle fait partie (calculé une fois). */
+export function seriesIndex(series: Map<string, Pet[]>): Map<string, string[]> {
+  const idx = new Map<string, string[]>();
+  for (const [key, list] of series) for (const p of list) idx.set(p.id, [...(idx.get(p.id) ?? []), key]);
+  return idx;
+}
+
+export function seriesCompletedBy(petId: string, series: Map<string, Pet[]>, items: Map<string, Item>, index?: Map<string, string[]>): string[] {
+  const keys = index ? (index.get(petId) ?? []) : [...series].filter(([, list]) => list.some((p) => p.id === petId)).map(([k]) => k);
+  return keys.filter((k) => series.get(k)!.every((p) => items.get(p.id)?.have));
 }
 
 /** Séries presque complètes (il en manque 1 ou 2) : de bonnes cibles pour la wishlist. */
@@ -100,5 +108,35 @@ export function totals(items: Map<string, Item>): Totals {
 export const MILESTONES = [1, 10, 25, 50, 100, 200, 300, 500, 750, 1000, 1500, 2000, 2500, 3000];
 
 export const milestoneReached = (before: number, after: number) => MILESTONES.find((m) => before < m && after >= m) ?? null;
+
+export interface MoldProgress extends Progress {
+  mold: string;
+  name: string;
+  gens: Gen[];
+  /** Une figurine représentative (avec photo de préférence). */
+  cover: Pet;
+  guesses: number;
+}
+
+/** Progression par moule (G2 et G7 réunies), triée par nom. */
+export function moldProgress(pets: Pet[], items: Map<string, Item>, molds: Map<string, Mold>): MoldProgress[] {
+  const map = new Map<string, { have: number; total: number; gens: Set<Gen>; cover: Pet; guesses: number }>();
+  for (const p of pets) {
+    const id = items.get(p.id)?.mold ?? p.mold;
+    let g = map.get(id);
+    if (!g) {
+      g = { have: 0, total: 0, gens: new Set(), cover: p, guesses: 0 };
+      map.set(id, g);
+    }
+    g.total++;
+    g.gens.add(p.gen);
+    if (items.get(p.id)?.have) g.have++;
+    if (p.moldGuess && !items.get(p.id)?.mold) g.guesses++;
+    if (!g.cover.img && p.img) g.cover = p;
+  }
+  return [...map]
+    .map(([mold, g]) => ({ mold, name: molds.get(mold)?.fr ?? mold, gens: [...g.gens].sort(), cover: g.cover, guesses: g.guesses, ...progressOf(g.have, g.total) }))
+    .sort((a, b) => a.name.localeCompare(b.name, 'fr'));
+}
 
 export { lineOf };

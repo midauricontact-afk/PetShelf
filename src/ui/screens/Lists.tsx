@@ -90,7 +90,7 @@ export function ListsScreen() {
       )}
 
       {current.length ? (
-        <Grid pets={current} items={s.items} photoUrls={s.photoUrls} showNames={s.settings.showNames} quick={false} size={s.settings.thumb} resetKey={which} />
+        <Grid pets={current} items={s.items} photoUrls={s.photoUrls} showNames={s.settings.showNames} quick={false} size={s.settings.thumb} key={which} />
       ) : (
         <div className="empty">
           <div className="empty-emoji">{which === 'want' ? '💖' : which === 'dupes' ? '🔁' : '🐾'}</div>

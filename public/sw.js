@@ -1,6 +1,6 @@
 /* Service worker de PetShelf : ouverture instantanée, fonctionnement hors ligne,
    et photos des figurines gardées en cache sur le téléphone une fois vues (elles restent chez leurs auteurs). */
-const CACHE = 'petshelf-v1';
+const CACHE = 'petshelf-v2';
 const IMAGES = 'petshelf-images-v1';
 const MAX_IMAGES = 5000;
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/apple-touch-icon.png'];

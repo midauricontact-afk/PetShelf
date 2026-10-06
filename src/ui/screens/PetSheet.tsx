@@ -1,9 +1,9 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { sfx } from '../../audio/sounds';
-import { petNumber, petTitle } from '../../core/catalog';
+import { moldName, petNumber, petTitle } from '../../core/catalog';
 import { ACCESSORIES, CONDITIONS, FAMILIES, emptyItem } from '../../core/types';
-import { removePhoto, setDupes, setPhoto, store, toggleHave, toggleWant, updateItem } from '../../state/store';
+import { removePhoto, setDupes, setFilters, setMoldOverride, setPhoto, store, toggleHave, toggleWant, updateItem } from '../../state/store';
 import { PetImage } from '../components/PetImage';
 import { Chip } from '../components/primitives';
 import { Sheet } from '../components/Sheet';
@@ -203,6 +203,13 @@ export function PetSheet({ id, list, onClose, onNavigate }: { id: string | null;
               />
             </section>
 
+            <MoldCard petId={pet.id} onShowAll={(mold) => {
+              setFilters({ mold, q: '', gen: 'all', status: 'all', fam: null, species: null, year: null, line: null });
+              saveNote();
+              onClose();
+              ui.goTab('collection');
+            }} />
+
             <section className="card">
               <h3>Fiche</h3>
               <dl className="facts">
@@ -255,5 +262,63 @@ export function PetSheet({ id, list, onClose, onNavigate }: { id: string | null;
         </AnimatePresence>
       )}
     </Sheet>
+  );
+}
+
+/** Le moule de la figurine : affiché, et corrigeable à la main s'il est « à vérifier » (ou faux). */
+function MoldCard({ petId, onShowAll }: { petId: string; onShowAll: (mold: string) => void }) {
+  const catalog = store.useSel((s) => s.catalog);
+  const override = store.useSel((s) => s.items.get(petId)?.mold);
+  const [editing, setEditing] = useState(false);
+  const pet = catalog?.byId.get(petId);
+  const options = useMemo(() => (catalog ? [...catalog.molds.values()].sort((a, b) => a.fr.localeCompare(b.fr, 'fr')) : []), [catalog]);
+  if (!pet || !catalog) return null;
+  const current = override ?? pet.mold;
+  const uncertain = pet.moldGuess && !override;
+  return (
+    <section className="card">
+      <div className="row-between">
+        <div>
+          <h3>Moule</h3>
+          <p className="mold-name">
+            🧩 <strong>{moldName(catalog.molds, current)}</strong>
+            {!override && pet.moldV ? <span className="muted small"> · {pet.moldV}</span> : null}
+          </p>
+          {uncertain && <p className="small warn">À vérifier : moule déduit de l’espèce, pas confirmé par les bases de collectionneurs.</p>}
+          {override && <p className="small muted">Corrigé à la main (catalogue : {moldName(catalog.molds, pet.mold)}).</p>}
+        </div>
+        <button className="btn soft sm" onClick={() => (sfx.click(), onShowAll(current))}>
+          Voir le moule
+        </button>
+      </div>
+      {editing ? (
+        <div className="mold-edit">
+          <select
+            className="select"
+            value={current}
+            onChange={(e) => {
+              setMoldOverride(pet.id, e.target.value);
+              setEditing(false);
+            }}
+          >
+            {options.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.fr}
+                {m.en !== m.fr ? ` (${m.en})` : ''}
+              </option>
+            ))}
+          </select>
+          {override && (
+            <button className="link" onClick={() => (setMoldOverride(pet.id, undefined), setEditing(false))}>
+              Revenir au moule du catalogue
+            </button>
+          )}
+        </div>
+      ) : (
+        <button className="link" onClick={() => (sfx.click(), setEditing(true))}>
+          {uncertain ? 'Corriger le moule' : 'Ce n’est pas le bon moule ?'}
+        </button>
+      )}
+    </section>
   );
 }

@@ -1,5 +1,5 @@
 import { AnimatePresence, MotionConfig, motion } from 'framer-motion';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import { sfx } from './audio/sounds';
 import { themeById, themeVars } from './core/themes';
 import { dismissCelebration, initApp, store } from './state/store';
@@ -10,10 +10,12 @@ import { TabBar } from './ui/components/TabBar';
 import { UIContext, type AppUI, type TabId } from './ui/ctx';
 import { CollectionScreen } from './ui/screens/Collection';
 import { ListsScreen } from './ui/screens/Lists';
+import { MoldsScreen } from './ui/screens/Molds';
 import { Onboarding } from './ui/screens/Onboarding';
 import { PetSheet } from './ui/screens/PetSheet';
 import { ProgressScreen } from './ui/screens/Progress';
 import { SettingsScreen } from './ui/screens/Settings';
+import { Perf } from './perf';
 
 interface ConfirmState {
   title: string;
@@ -38,8 +40,19 @@ function useDarkMode(mode: 'auto' | 'light' | 'dark') {
 }
 
 export function App() {
-  const s = store.use();
+  // App ne suit que ce dont elle a besoin : cocher une figurine ne redessine pas toute l'application.
+  const ready = store.useSel((st) => st.ready);
+  const error = store.useSel((st) => st.error);
+  const settings = store.useSel((st) => st.settings);
+  const burst = store.useSel((st) => st.burst);
+  const celebration = store.useSel((st) => st.celebration);
+  const toasts = store.useSel((st) => st.toasts);
+  const s = { ready, error, settings, burst, celebration, toasts };
   const [tab, setTab] = useState<TabId>('collection');
+  // L'onglet surligné change immédiatement ; le contenu suit en transition.
+  const [navTab, setNavTab] = useState<TabId>('collection');
+  const [, startTransition] = useTransition();
+  const scrollByTab = useRef<Partial<Record<TabId, number>>>({});
   const [pet, setPet] = useState<{ id: string; list: string[] } | null>(null);
   const [confirmState, setConfirmState] = useState<ConfirmState | null>(null);
   const theme = themeById(s.settings.themeId);
@@ -74,8 +87,13 @@ export function App() {
         setPet({ id, list: list ?? [id] });
       },
       goTab: (t) => {
-        window.scrollTo({ top: 0 });
-        setTab(t);
+        // Chaque onglet retrouve sa position de défilement ; le changement passe en « transition » pour que le doigt ne soit jamais bloqué.
+        setTab((cur) => {
+          scrollByTab.current[cur] = window.scrollY;
+          return cur;
+        });
+        setNavTab(t);
+        startTransition(() => setTab(t));
       },
       confirm,
     }),
@@ -99,6 +117,7 @@ export function App() {
     );
 
   return (
+    <Perf id="app">
     <MotionConfig reducedMotion="user">
       <UIContext.Provider value={ui}>
         <Backdrop theme={theme} />
@@ -108,16 +127,21 @@ export function App() {
         ) : (
           <div className="app">
             <main className="content">
-              <AnimatePresence mode="wait" initial={false}>
-                <motion.div key={tab} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.18 }}>
-                  {tab === 'collection' && <CollectionScreen />}
+              {/* La collection reste en mémoire (cachée) : y revenir est instantané. Les autres onglets sont légers. */}
+              <div className={`tab-pane${tab === 'collection' ? ' shown' : ''}`} hidden={tab !== 'collection'}>
+                <CollectionScreen active={tab === 'collection'} />
+              </div>
+              {tab !== 'collection' && (
+                <div key={tab} className="tab-pane shown">
+                  {tab === 'molds' && <MoldsScreen />}
                   {tab === 'lists' && <ListsScreen />}
                   {tab === 'progress' && <ProgressScreen />}
                   {tab === 'settings' && <SettingsScreen />}
-                </motion.div>
-              </AnimatePresence>
+                </div>
+              )}
+              <ScrollRestore tab={tab} saved={scrollByTab} />
             </main>
-            <TabBar tab={tab} onChange={ui.goTab} />
+            <TabBar tab={navTab} onChange={ui.goTab} />
           </div>
         )}
 
@@ -170,5 +194,14 @@ export function App() {
         </div>
       </UIContext.Provider>
     </MotionConfig>
+    </Perf>
   );
+}
+
+/** Remet la page à la position où on l'avait laissée dans cet onglet. */
+function ScrollRestore({ tab, saved }: { tab: TabId; saved: React.RefObject<Partial<Record<TabId, number>>> }) {
+  useEffect(() => {
+    window.scrollTo({ top: saved.current?.[tab] ?? 0 });
+  }, [tab, saved]);
+  return null;
 }

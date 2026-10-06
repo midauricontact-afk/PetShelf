@@ -31,7 +31,23 @@ export interface Pet {
   alt?: string[];
   /** Couleurs dominantes estimées (approximatives). */
   colors?: string[];
+  /** Moule (forme de la figurine), commun à G2 et G7 : « collie », « cat-shorthair »… */
+  mold: string;
+  /** Version du moule chez les collectionneurs (« V1 », « V2 »…). */
+  moldV?: string;
+  /** Moule déduit (espèce, numéros voisins) et non confirmé : « à vérifier ». */
+  moldGuess?: boolean;
   src: string;
+  /** Texte de recherche pré-calculé (minuscules, sans accents) : la recherche reste instantanée. */
+  q?: string;
+}
+
+export interface Mold {
+  id: string;
+  /** Nom français (« Colley »). */
+  fr: string;
+  /** Nom des collectionneurs, en anglais (« Collie »). */
+  en: string;
 }
 
 export type Condition = 'boite' | 'parfait' | 'tresbon' | 'bon' | 'abime';
@@ -49,6 +65,8 @@ export interface Item {
   note?: string;
   /** J'ai ajouté ma propre photo. */
   photo?: boolean;
+  /** Moule corrigé à la main (remplace celui du catalogue). */
+  mold?: string;
   /** Date où je l'ai cochée. */
   addedAt?: number;
   updatedAt: number;
@@ -87,4 +105,4 @@ export const FAMILIES: { id: Family; label: string; emoji: string }[] = [
 export const emptyItem = (id: string): Item => ({ id, have: false, want: false, dupes: 0, updatedAt: 0 });
 
 /** Un enregistrement vide n'a pas besoin d'être gardé. */
-export const isEmptyItem = (it: Item) => !it.have && !it.want && !it.dupes && !it.condition && !it.acc && !it.note && !it.photo;
+export const isEmptyItem = (it: Item) => !it.have && !it.want && !it.dupes && !it.condition && !it.acc && !it.note && !it.photo && !it.mold;

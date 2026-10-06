@@ -19,5 +19,7 @@ export function createStore<T extends object>(initial: T) {
     },
     subscribe,
     use: (): T => useSyncExternalStore(subscribe, get),
+    /** Ne s'abonne qu'à une partie de l'état : le composant ne se redessine que si cette partie change. */
+    useSel: <R,>(sel: (s: T) => R): R => useSyncExternalStore(subscribe, () => sel(state)),
   };
 }

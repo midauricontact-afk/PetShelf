@@ -17,6 +17,10 @@ export interface Settings {
   showNames: boolean;
   /** Animation de confettis à chaque nouvelle figurine. */
   celebrate: boolean;
+  /** Galerie rangée en sections par moule. */
+  byMold: boolean;
+  /** Sections de moule repliées. */
+  collapsed: string[];
   onboarded: boolean;
 }
 
@@ -30,6 +34,8 @@ export const DEFAULT_SETTINGS: Settings = {
   volume: 0.6,
   showNames: true,
   celebrate: true,
+  byMold: true,
+  collapsed: [],
   onboarded: false,
 };
 
@@ -48,6 +54,8 @@ export function normalizeSettings(raw: unknown): Settings {
     volume: pick(r.volume, (v) => typeof v === 'number' && v >= 0 && v <= 1, d.volume),
     showNames: pick(r.showNames, (v) => typeof v === 'boolean', d.showNames),
     celebrate: pick(r.celebrate, (v) => typeof v === 'boolean', d.celebrate),
+    byMold: pick(r.byMold, (v) => typeof v === 'boolean', d.byMold),
+    collapsed: Array.isArray(r.collapsed) ? (r.collapsed as unknown[]).filter((x): x is string => typeof x === 'string' && x.length < 60).slice(0, 500) : d.collapsed,
     onboarded: pick(r.onboarded, (v) => typeof v === 'boolean', d.onboarded),
   };
 }

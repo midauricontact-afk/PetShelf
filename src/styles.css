@@ -1450,3 +1450,229 @@ input[type='range']::-webkit-slider-thumb {
     animation: none;
   }
 }
+
+/* ---------- Grille virtualisée et moules ---------- */
+.tab-pane.shown {
+  animation: tab-in 0.16s ease-out;
+}
+@keyframes tab-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+.vgrid,
+.mold-list {
+  position: relative;
+  width: 100%;
+}
+.vrow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  will-change: transform;
+}
+.vrow-tiles {
+  display: grid;
+  grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+  gap: var(--gap);
+}
+.vgrid .tile {
+  content-visibility: visible;
+}
+.vgrid .tile-meta {
+  height: var(--meta-h);
+  overflow: hidden;
+  position: relative;
+}
+.pet-img {
+  background: #fff;
+}
+.tile-img .silhouette,
+.mold-cover .silhouette {
+  position: absolute;
+  inset: 11%;
+  width: 78%;
+  height: 78%;
+}
+.guess-dot {
+  position: absolute;
+  right: 7px;
+  bottom: 8px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ff9a3c;
+  box-shadow: 0 0 0 2px var(--tile);
+}
+.guess-dot.inline {
+  position: static;
+  display: inline-block;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+.mold-head,
+.mold-row {
+  width: 100%;
+  height: calc(100% - 10px);
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px 8px 8px;
+  border-radius: 20px;
+  background: var(--card);
+  border: 1.5px solid var(--line);
+  text-align: left;
+  box-shadow: var(--shadow);
+}
+.mold-row {
+  height: calc(100% - 8px);
+}
+.mold-head.done,
+.mold-row.done {
+  border-color: color-mix(in srgb, #ffd36e 70%, var(--line));
+  background: color-mix(in srgb, #ffd36e 18%, var(--card));
+}
+.mold-cover {
+  position: relative;
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #fff;
+  border: 1.5px solid var(--line);
+}
+.mold-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.mold-text strong {
+  font-size: 16px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mold-sub {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+}
+.gen-pill.tiny {
+  font-size: 10px;
+  padding: 1px 6px;
+}
+.mold-bar {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--line);
+  overflow: hidden;
+}
+.mold-bar span {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--accent);
+  transition: width 0.4s ease;
+}
+.mold-chevron {
+  flex-shrink: 0;
+  color: var(--muted);
+  transform: rotate(90deg);
+  transition: transform 0.2s ease;
+}
+.mold-head.collapsed .mold-chevron {
+  transform: rotate(0deg);
+}
+.mold-pct {
+  font-weight: 800;
+  color: var(--accent);
+  font-size: 15px;
+}
+.view-toggle {
+  font-size: 13px;
+  font-weight: 750;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--card-solid);
+  border: 1.5px solid var(--line);
+  color: var(--text);
+}
+.view-toggle.on {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.active-mold {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  padding: 4px 6px 4px 14px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  font-size: 14px;
+}
+.small-pct {
+  font-size: 15px;
+}
+.mold-name {
+  font-size: 16px;
+}
+.warn {
+  color: #c4610f;
+  margin-top: 4px;
+}
+:root[data-mode='dark'] .warn {
+  color: #ffb26b;
+}
+.mold-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+}
+.tabbar button {
+  min-width: 0;
+}
+.tab-label {
+  font-size: 10.5px;
+  white-space: nowrap;
+}
+.spark {
+  opacity: 0;
+  animation-name: spark-up;
+  animation-timing-function: ease-out;
+  animation-fill-mode: both;
+  will-change: transform, opacity;
+}
+@keyframes spark-up {
+  0% {
+    opacity: 0;
+    transform: translate(0, 40px) scale(0.4) rotate(0);
+  }
+  15% {
+    opacity: 1;
+    transform: translate(calc(var(--dx) * 0.2), 0) scale(1.1) rotate(calc(var(--rot) * 0.2));
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--dx), var(--dy)) scale(0.7) rotate(var(--rot));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .spark {
+    display: none;
+  }
+}

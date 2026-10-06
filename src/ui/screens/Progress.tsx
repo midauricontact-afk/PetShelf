@@ -7,7 +7,7 @@ import { Bar, Ring } from '../components/Ring';
 import { Segmented } from '../components/primitives';
 import { useUI } from '../ctx';
 
-type By = 'family' | 'year' | 'species' | 'line';
+type By = 'family' | 'mold' | 'year' | 'species' | 'line';
 
 export function ProgressScreen() {
   const s = store.use();
@@ -32,6 +32,10 @@ export function ProgressScreen() {
         const f = FAMILIES.find((x) => x.id === g.key);
         return { ...g, label: `${f?.emoji ?? ''} ${f?.label ?? g.key}`, onTap: () => openFiltered({ fam: f?.id ?? null }) };
       });
+    else if (by === 'mold')
+      list = progressBy(pets, s.items, (p) => s.items.get(p.id)?.mold ?? p.mold)
+        .sort((a, b) => b.have - a.have || b.total - a.total)
+        .map((g) => ({ ...g, label: `🧩 ${s.catalog?.molds.get(g.key)?.fr ?? g.key}`, onTap: () => openFiltered({ mold: g.key }) }));
     else if (by === 'year')
       list = progressBy(pets, s.items, (p) => (p.year ? String(p.year) : undefined))
         .sort((a, b) => a.key.localeCompare(b.key))
@@ -49,7 +53,7 @@ export function ProgressScreen() {
   }, [by, pets, s.items]);
 
   function openFiltered(patch: Parameters<typeof setFilters>[0]) {
-    setFilters({ gen: 'all', status: 'all', fam: null, species: null, year: null, line: null, q: '', ...patch });
+    setFilters({ gen: 'all', status: 'all', fam: null, species: null, year: null, line: null, mold: null, q: '', ...patch });
     ui.goTab('collection');
   }
 
@@ -119,6 +123,7 @@ export function ProgressScreen() {
           value={by}
           options={[
             { id: 'family', label: 'Famille' },
+            { id: 'mold', label: 'Moule' },
             { id: 'year', label: 'Année' },
             { id: 'species', label: 'Espèce' },
             { id: 'line', label: 'Gamme' },

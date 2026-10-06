@@ -39,6 +39,7 @@ export const Tile = memo(function Tile({
             {petNumber(pet)}
           </span>
           {showName && <span className="tile-name">{petTitle(pet)}</span>}
+          {pet.moldGuess && !item?.mold && <span className="guess-dot" title="Moule à vérifier" />}
         </div>
       </button>
       <button className={`tile-check${have ? ' on' : ''}`} onClick={() => onToggle(pet.id)} aria-pressed={have} aria-label={have ? 'Décocher' : 'Je l’ai'}>

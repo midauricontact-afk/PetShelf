@@ -11,8 +11,11 @@ Toutes les figurines sont visibles avec leur photo. Je coche celles que j'ai, je
 - **Galerie** de toutes les figurines G2 et G7 avec photo, numéro et une pastille « Je l'ai » (un seul appui).
 - **Cochage rapide ⚡** : toute la vignette devient une case à cocher, idéal pour remplir sa collection la première fois.
 - **Fiche détaillée** : « Je la cherche » (wishlist), « En double » avec quantité, état (neuve en boîte, parfait, très bon, bon, abîmée), accessoires (complets, en partie, aucun), note personnelle, **ma propre photo** (elle remplace l'image du catalogue), sets d'origine, année, couleurs. On passe à la figurine suivante en glissant la photo.
+- **Classement par moule** 🧩 : les figurines sont rangées par forme, comme chez les collectionneurs (tous les colleys ensemble, tous les chats à poil court ensemble…), G2 et G7 réunies. Chaque section a sa vignette et sa progression (« Colley — 12 / 18 ») et se replie d'un appui. Le bouton « Par moule / Par numéro » change d'affichage.
+- **Écran Moules** : tous les moules avec leur progression, triables (A → Z, progression, les plus grands) ; un appui ouvre la collection sur ce moule.
+- **Moule « à vérifier »** (petit point orange) : moule déduit, pas confirmé par les bases de collectionneurs. Dans la fiche, « Corriger le moule » permet de le changer à la main.
 - **Recherche** par numéro (« 1234 », « #1234 », « T226 »), nom, espèce, couleur, set ou année. Plusieurs mots possibles : « chat rose 2008 ».
-- **Filtres** : génération, famille d'animaux, espèce, année, gamme, et possédées / manquantes / wishlist / doubles. Plusieurs ordres de tri.
+- **Filtres** : génération, moule, famille d'animaux, espèce, année, gamme, et possédées / manquantes / wishlist / doubles. Plusieurs ordres de tri.
 - **Progrès** : pourcentage global et par génération, par famille, année, espèce et gamme. Badges à 1, 10, 25, 50, 100… figurines. Séries complètes.
 - **Mes listes** : wishlist, doubles, dernières ajoutées, **liste d'échange à partager** (Messages, WhatsApp…), **figurine du jour** et séries **presque complètes**.
 - **Célébrations** : confettis à chaque nouvelle figurine, fanfare quand une série est complète ou un palier atteint.
@@ -53,6 +56,12 @@ Les deux sites autorisent la lecture de ces pages (fichier `robots.txt`). Le scr
 
 Les photos appartiennent à leurs auteurs. **Aucune image n'est copiée dans le dépôt** : le catalogue ne garde que leur adresse d'origine. Le téléphone les affiche depuis leur site, puis les garde en mémoire pour aller plus vite et marcher hors connexion. Si une image ne charge pas, une silhouette mignonne de l'espèce s'affiche à la place.
 
+### Les moules
+
+Le moule (la forme de la figurine) vient des pages « Mold » de LPSMerch, une par moule et par période. Les noms de version (« Collie V1 », « Collie V2 ») sont réunis sous un même moule (« Colley ») pour que G2 et G7 se retrouvent ensemble ; la version reste indiquée dans la fiche.
+
+Quand une figurine n'apparaît sur aucune page de moule, elle reçoit le moule le plus fréquent de son espèce et elle est marquée **« à vérifier »**. Une correction faite à la main est gardée dans la collection (et dans les sauvegardes), sans toucher au catalogue.
+
 ### Ce qui est estimé
 
 - **Années « vers… »** : quand la source ne donne pas l'année, elle est estimée d'après les numéros voisins (les numéros suivent l'ordre de sortie).
@@ -83,6 +92,17 @@ npm test         # tests (catalogue, filtres, progression, sauvegarde)
 npm run build    # version de production (dossier dist)
 ```
 
-Technos : Vite, React, TypeScript, Framer Motion, IndexedDB (`idb`), Web Audio. Service worker fait main.
+Technos : Vite, React, TypeScript, Framer Motion, TanStack Virtual, IndexedDB (`idb`), Web Audio. Service worker fait main.
+
+### Fluidité
+
+- La galerie est **virtualisée** (TanStack Virtual) : seules les rangées visibles existent dans la page (une trentaine de vignettes, même avec 3 500 figurines).
+- Une image qui se charge ne provoque aucun rendu React ; la place des images est réservée (pas de saut).
+- Recherche et tris pré-calculés au chargement du catalogue ; les changements de filtre et d'onglet passent en « transition » React, le doigt n'est jamais bloqué.
+- La collection reste en mémoire quand on change d'onglet ; cocher une figurine ne redessine que sa vignette et l'en-tête de son moule.
+- Les écritures dans IndexedDB sont regroupées juste après l'appui, en une seule transaction.
+- Confettis en CSS pur.
+
+Pour mesurer : `npm run build:profile` produit `dist-profile/` avec le profileur React activé ; chaque rendu est noté dans `window.__prof` (durée en ms).
 
 PetShelf est une app de fan pour un usage personnel, sans lien avec les marques Littlest Pet Shop, Hasbro ou Basic Fun, et n'utilise ni leurs logos ni leurs marques.

@@ -135,8 +135,117 @@ export function isRealName(name, animal) {
   return !Object.keys(SPECIES_FR).some((k) => k.toLowerCase() === n || k.toLowerCase().split(' ').includes(n));
 }
 
+// ---------- Moules ----------
+/** Page « Mold » de LPSMerch : la liste des moules d'une génération → [{ href, name }]. */
+export function parseMoldIndex(html) {
+  const out = [];
+  for (const m of html.matchAll(/<b><a href='(\/[^/']+\/mold\/[^']+\/)'>([^<]+)<\/a><\/b>/g)) out.push({ href: m[1], name: decode(m[2]) });
+  return out;
+}
+
+/** Page d'un moule : les identifiants des sorties qui utilisent ce moule. */
+export function parseMoldPage(html) {
+  const start = html.indexOf('blog-post-body');
+  const end = html.indexOf('post-footer', start);
+  const body = html.slice(Math.max(0, start), end > start ? end : undefined);
+  return [...new Set([...body.matchAll(/\/details\/([^/']+)\//g)].map((m) => m[1]))];
+}
+
+/** Télécharge tous les moules d'une génération LPSMerch → Map(identifiant de sortie → nom du moule). */
+async function fetchMolds(page, into) {
+  const index = parseMoldIndex(await get(`https://lpsmerch.com/${page}/mold/`, 2000));
+  for (const { href, name } of index) {
+    try {
+      for (const id of parseMoldPage(await get(`https://lpsmerch.com${href}`, 2000))) into.set(id, name);
+    } catch (e) {
+      console.log(`  ! ${e.message}`);
+    }
+  }
+  return index.length;
+}
+
+/** « Cat Shorthair V2 » → { base: 'Cat Shorthair', version: 'V2' }. */
+export function splitMold(name) {
+  const m = String(name).trim().match(/^(.*?)(?:\s+(V\d+|\d+))?$/i);
+  let base = (m?.[1] ?? name).trim().replace(/Pettriplets/i, 'Petriplets');
+  base = MOLD_ALIASES[base] ?? base;
+  const v = m?.[2] ?? '';
+  return { base, version: v ? (/^\d+$/.test(v) ? `V${v}` : v.toUpperCase()) : '' };
+}
+
+/** Variantes d'écriture d'un même moule chez LPSMerch. */
+const MOLD_ALIASES = { 'Baby Rabbit': 'Rabbit Baby' };
+
+export const moldSlug = (base) =>
+  base
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+
+/**
+ * Donne un moule à chaque figurine.
+ *  - connu (page du moule chez LPSMerch) : sûr ;
+ *  - sinon, le moule le plus fréquent pour la même espèce (même génération d'abord) : marqué « à vérifier » ;
+ *  - sinon, l'espèce elle-même (ou « Moule inconnu ») : marqué « à vérifier ».
+ * Les moules de même nom sont regroupés entre G2 et G7 (« Collie V1 » et « Collie V2 » → Colley).
+ */
+export function assignMolds(pets) {
+  const bySpecies = new Map();
+  for (const p of pets) {
+    if (!p.moldEn || !p.speciesEn) continue;
+    for (const key of [`${p.gen}:${p.speciesEn}`, `*:${p.speciesEn}`]) {
+      const c = bySpecies.get(key) ?? new Map();
+      c.set(p.moldEn, (c.get(p.moldEn) ?? 0) + 1);
+      bySpecies.set(key, c);
+    }
+  }
+  const top = (c) => (c ? [...c.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] : undefined);
+  /** @type {Record<string, { fr: string; en: string }>} */
+  const molds = {};
+  for (const p of pets) {
+    let name = p.moldEn;
+    if (!name) {
+      name = top(bySpecies.get(`${p.gen}:${p.speciesEn}`)) ?? top(bySpecies.get(`*:${p.speciesEn}`)) ?? p.speciesEn ?? '';
+      p.moldGuess = true;
+    }
+    const { base, version } = splitMold(name || 'Unknown');
+    const slug = base === 'Unknown' ? 'inconnu' : moldSlug(base) || 'inconnu';
+    p.mold = slug;
+    if (version) p.moldV = version;
+    molds[slug] ??= { fr: MOLD_FR[base] ?? SPECIES_FR[base] ?? (base === 'Unknown' ? 'Moule inconnu' : base), en: base };
+    delete p.moldEn;
+  }
+  return molds;
+}
+
+/** Noms de moules qui ne sont pas de simples espèces. */
+const MOLD_FR = {
+  Unknown: 'Moule inconnu',
+  'Cat Shorthair': 'Chat européen à poil court',
+  'Cat Longhair': 'Chat à poil long',
+  'Kitten Cat': 'Chaton',
+  'Cat Sitting': 'Chat assis',
+  'Cat Lying': 'Chat couché',
+  'Dog Sitting': 'Chien assis',
+  'Chihuahua Shorthair': 'Chihuahua à poil court',
+  'Chihuahua Longhair': 'Chihuahua à poil long',
+  'Rabbit Long Ears': 'Lapin aux longues oreilles',
+  'Rabbit Floppy Ears': 'Lapin bélier (oreilles tombantes)',
+  'Rabbit Baby': 'Bébé lapin',
+  'Rabbit Angora': 'Lapin angora',
+  'Quail Petriplets': 'Triplés cailles',
+  'Monkey Petriplets': 'Triplés singes',
+  'Turtle Petriplets': 'Triplés tortues',
+  'Squirrel Petriplets': 'Triplés écureuils',
+  'Bear Petriplets': 'Triplés oursons',
+  'Penguin Petriplets': 'Triplés pingouins',
+  'Kitten Longhair Petriplets': 'Triplés chatons à poil long',
+};
+
 /** Regroupe les sorties par génération + numéro : une fiche = une figurine. */
-export function mergeReleases(releases) {
+export function mergeReleases(releases, moldOf = new Map()) {
   const byKey = new Map();
   for (const r of releases) {
     if (/plush/i.test(r.line)) continue; // peluches : pas des figurines
@@ -171,6 +280,7 @@ export function mergeReleases(releases) {
       sets,
       img: images[0] ? resizeBlogger(images[0], 400) : '',
       alt: images.slice(1, 3).map((u) => resizeBlogger(u, 400)),
+      moldEn: mostCommon(rs.map((r) => moldOf.get(r.srcId))) || undefined,
       src: 'lpsmerch',
       ref: rs[0].srcId,
     });
@@ -242,7 +352,10 @@ async function main() {
     console.log(`  ${page} → ${rs.length} sorties`);
     releases.push(...rs);
   }
-  const pets = mergeReleases(releases);
+  console.log('   moules…');
+  const moldOf = new Map();
+  for (const { page } of LPSMERCH) console.log(`  ${page} → ${await fetchMolds(page, moldOf)} moules`);
+  const pets = mergeReleases(releases, moldOf);
 
   if (!args.has('--no-toysisters')) {
     console.log('2/3 Toy Sisters (recoupement, 20 s entre pages)…');
@@ -279,6 +392,9 @@ async function main() {
   }
 
   fillYears(pets);
+  const molds = assignMolds(pets);
+  const guessed = pets.filter((p) => p.moldGuess).length;
+  console.log(`  ${Object.keys(molds).length} moules, ${guessed} figurines à vérifier`);
   if (args.has('--colors')) {
     console.log('3/3 Couleurs dominantes…');
     await addColors(pets);
@@ -293,6 +409,7 @@ async function main() {
   const data = {
     version: new Date().toISOString().slice(0, 10),
     sources: ['https://lpsmerch.com/', 'https://www.toysisters.com/'],
+    molds,
     pets: clean,
   };
   writeFileSync(OUT, JSON.stringify(data));

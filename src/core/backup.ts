@@ -44,6 +44,7 @@ function normalizeItem(raw: unknown): Item | null {
     acc: typeof r.acc === 'string' && ACC_IDS.has(r.acc) ? (r.acc as Accessories) : undefined,
     note: typeof r.note === 'string' && r.note.trim() ? r.note.slice(0, 2000) : undefined,
     photo: r.photo === true || undefined,
+    mold: typeof r.mold === 'string' && /^[a-z0-9-]{1,60}$/.test(r.mold) ? r.mold : undefined,
     addedAt: typeof r.addedAt === 'number' ? r.addedAt : undefined,
     updatedAt: typeof r.updatedAt === 'number' ? r.updatedAt : Date.now(),
   };

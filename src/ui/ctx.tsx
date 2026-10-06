@@ -1,6 +1,6 @@
 import { createContext, useContext } from 'react';
 
-export type TabId = 'collection' | 'lists' | 'progress' | 'settings';
+export type TabId = 'collection' | 'molds' | 'lists' | 'progress' | 'settings';
 
 export interface AppUI {
   /** Ouvre la fiche d'une figurine ; `list` permet de passer à la précédente / suivante. */

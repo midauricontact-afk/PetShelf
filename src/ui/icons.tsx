@@ -179,3 +179,9 @@ export const IconCopy = (p: P) => (
     <path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" />
   </svg>
 );
+export const IconMold = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M9 4h6v2.5a2 2 0 1 0 0 3V12h-2.5a2 2 0 1 0-3 0H7V9.5a2 2 0 1 1 0-3V4z" />
+    <path d="M7 12v8h6v-2.5a2 2 0 1 1 3 0V20h2v-8h-2.5" />
+  </svg>
+);
