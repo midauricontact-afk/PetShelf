@@ -1,0 +1,18 @@
+{
+  "name": "PetShelf — ma collection",
+  "short_name": "PetShelf",
+  "description": "Ma collection de figurines Littlest Pet Shop G2 et G7 : je coche, je cherche, j'échange.",
+  "lang": "fr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#fff5fa",
+  "theme_color": "#fff5fa",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "name": "petshelf",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "PetShelf — ma collection de figurines Littlest Pet Shop G2 et G7 (PWA).",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -p tsconfig.json --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "icons": "node scripts/gen-icons.mjs",
+    "catalog": "node scripts/build-catalog.mjs"
+  },
+  "dependencies": {
+    "framer-motion": "^14.0.0",
+    "idb": "^8.0.3",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "fake-indexeddb": "^6.2.5",
+    "jpeg-js": "^0.4.4",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.2",
+    "vitest": "^5.0.3"
+  }
+}
