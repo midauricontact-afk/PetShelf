@@ -20,7 +20,7 @@ export function TabBar({ tab, onChange }: { tab: TabId; onChange: (t: TabId) => 
           className={tab === id ? 'active' : ''}
           whileTap={{ scale: 0.88 }}
           onClick={() => {
-            if (tab !== id) sfx.select();
+            if (tab !== id) sfx.tab();
             onChange(id);
           }}
           aria-current={tab === id ? 'page' : undefined}

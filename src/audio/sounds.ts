@@ -99,20 +99,42 @@ function squeak(c: AudioContext, bus: AudioNode, start = 0, base = 900, gain = 0
 // Notes (Hz).
 const N = { c5: 523.25, e5: 659.25, g5: 783.99, a5: 880, c6: 1046.5, e6: 1318.5, g6: 1568, g4: 392 };
 
-/** Volontairement silencieux : un son à chaque appui (bouton, onglet, option…) faisait trop. */
-const quiet = () => undefined;
+/** Note très douce : attaque lente, sinus pur, grave et court — un petit « plop » feutré. */
+function softNote(c: AudioContext, bus: AudioNode, freq: number, start = 0, dur = 0.22, gain = 0.07) {
+  const t0 = c.currentTime + start;
+  const osc = c.createOscillator();
+  const g = c.createGain();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(freq, t0);
+  g.gain.setValueAtTime(0.0001, t0);
+  g.gain.exponentialRampToValueAtTime(Math.max(gain * config.volume, 0.0002), t0 + 0.035);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  osc.connect(g).connect(bus);
+  osc.start(t0);
+  osc.stop(t0 + dur + 0.05);
+}
 
 export const sfx = {
-  /** Toucher un bouton : silencieux. */
-  click: quiet,
-  /** Choisir une option, un onglet : silencieux. */
-  select: quiet,
-  /** Ouvrir une fiche : silencieux. */
-  open: quiet,
-  /** Fermer / revenir : silencieux. */
-  back: quiet,
-  /** Interrupteur : silencieux. */
-  toggle: quiet,
+  /** Toucher un bouton : un petit « pop ». */
+  click: () => play((c, b) => tone(c, { freq: 520, slideTo: 980, dur: 0.07, type: 'sine', gain: 0.14 }, b)),
+  /** Choisir une option. */
+  select: () => play((c, b) => tone(c, { freq: N.e5, slideTo: N.g5, dur: 0.1, type: 'triangle', gain: 0.13 }, b)),
+  /** Changer d'onglet (Collection, Moules, Listes…) : deux notes graves et feutrées, tout en douceur. */
+  tab: () =>
+    play((c, b) => {
+      softNote(c, b, N.g4, 0, 0.2, 0.07);
+      softNote(c, b, N.c5, 0.06, 0.26, 0.05);
+    }),
+  /** Ouvrir une fiche. */
+  open: () =>
+    play((c, b) => {
+      tone(c, { freq: 600, slideTo: 1200, dur: 0.09, type: 'sine', gain: 0.12 }, b);
+      tone(c, { freq: 1500, start: 0.06, dur: 0.08, type: 'sine', gain: 0.06 }, b);
+    }),
+  /** Fermer / revenir. */
+  back: () => play((c, b) => tone(c, { freq: 700, slideTo: 420, dur: 0.1, type: 'sine', gain: 0.1 }, b)),
+  /** Interrupteur. */
+  toggle: () => play((c, b) => tone(c, { freq: 880, slideTo: 1100, dur: 0.06, type: 'sine', gain: 0.1 }, b)),
   /** Cocher « Je l'ai » : pop + couinement joyeux. */
   check: () =>
     play((c, b) => {
@@ -139,6 +161,6 @@ export const sfx = {
     }, true),
   /** Étincelle (confettis, figurine du jour). */
   sparkle: () => play((c, b) => [N.c6, N.e6, N.g6].forEach((f, i) => tone(c, { freq: f, start: i * 0.05, dur: 0.15, type: 'sine', gain: 0.06 }, b)), true),
-  /** Petit cran (curseur, changement de photo) : silencieux. */
-  tick: quiet,
+  /** Petit cran (curseur). */
+  tick: () => play((c, b) => tone(c, { freq: 1300, dur: 0.03, type: 'sine', gain: 0.05 }, b)),
 };
