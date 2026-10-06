@@ -140,7 +140,9 @@ p {
   background: linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
   pointer-events: none;
 }
+/* (ancien fond à bulles floues retiré : trop coûteux sur iPhone) */
 .blob {
+  display: none;
   position: absolute;
   width: 70vmax;
   height: 70vmax;
@@ -149,6 +151,14 @@ p {
   border-radius: 50%;
   filter: blur(60px);
   opacity: var(--blob-opacity);
+}
+.backdrop-blobs {
+  position: absolute;
+  inset: 0;
+  opacity: var(--blob-opacity);
+}
+.pet-img.loaded + .silhouette {
+  display: none;
 }
 .pattern {
   position: absolute;
@@ -198,8 +208,6 @@ p {
   border-radius: var(--radius);
   padding: 16px;
   box-shadow: var(--shadow);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
 }
 .row-between {
   display: flex;
@@ -488,6 +496,8 @@ input[type='range']::-webkit-slider-thumb {
 .bar-fill {
   height: 100%;
   border-radius: 5px;
+  transform-origin: left center;
+  transition: transform 0.5s cubic-bezier(0.3, 1.2, 0.5, 1);
 }
 .search-row {
   display: flex;
@@ -598,10 +608,7 @@ input[type='range']::-webkit-slider-thumb {
 :root[data-mode='dark'] .tile-img {
   background: color-mix(in srgb, var(--tile) 70%, white 8%);
 }
-.tile:not(.have) .tile-img .pet-img.loaded {
-  filter: saturate(0.75);
-  opacity: 0.82;
-}
+
 .pet-img {
   position: absolute;
   inset: 0;
@@ -1261,8 +1268,6 @@ input[type='range']::-webkit-slider-thumb {
   background: var(--card);
   border: 1.5px solid var(--line);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.16);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
   z-index: 20;
 }
 .tabbar button {
@@ -1452,13 +1457,12 @@ input[type='range']::-webkit-slider-thumb {
 }
 
 /* ---------- Grille virtualisée et moules ---------- */
-.tab-pane.shown {
-  animation: tab-in 0.16s ease-out;
+.tab-pane.fade {
+  animation: tab-in 0.14s ease-out;
 }
 @keyframes tab-in {
   from {
     opacity: 0;
-    transform: translateY(6px);
   }
 }
 .vgrid,
@@ -1471,7 +1475,6 @@ input[type='range']::-webkit-slider-thumb {
   top: 0;
   left: 0;
   width: 100%;
-  will-change: transform;
 }
 .vrow-tiles {
   display: grid;
@@ -1525,7 +1528,6 @@ input[type='range']::-webkit-slider-thumb {
   background: var(--card);
   border: 1.5px solid var(--line);
   text-align: left;
-  box-shadow: var(--shadow);
 }
 .mold-row {
   height: calc(100% - 8px);
@@ -1581,7 +1583,8 @@ input[type='range']::-webkit-slider-thumb {
   height: 100%;
   border-radius: 3px;
   background: var(--accent);
-  transition: width 0.4s ease;
+  transform-origin: left center;
+  transition: transform 0.4s ease;
 }
 .mold-chevron {
   flex-shrink: 0;

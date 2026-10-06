@@ -36,7 +36,7 @@ export function themeVars(t: Theme, dark: boolean, accentOverride: string | null
     ? {
         '--bg': `hsl(${h} 28% 11%)`,
         '--bg2': `hsl(${h} 30% 16%)`,
-        '--card': `hsl(${h} 22% 18% / 0.92)`,
+        '--card': `hsl(${h} 22% 18% / 0.96)`,
         '--card-solid': `hsl(${h} 22% 18%)`,
         '--line': `hsl(${h} 20% 30% / 0.7)`,
         '--text': `hsl(${h} 30% 95%)`,
@@ -46,12 +46,12 @@ export function themeVars(t: Theme, dark: boolean, accentOverride: string | null
         '--accent-text': '#ffffff',
         '--tile': `hsl(${h} 22% 22%)`,
         '--shadow': '0 8px 24px rgba(0,0,0,0.35)',
-        '--blob-opacity': '0.16',
+        '--blob-opacity': '0.22',
       }
     : {
         '--bg': `hsl(${h} 70% 97%)`,
         '--bg2': `hsl(${h} 75% 93%)`,
-        '--card': 'rgba(255,255,255,0.88)',
+        '--card': 'rgba(255,255,255,0.94)',
         '--card-solid': '#ffffff',
         '--line': `hsl(${h} 40% 86%)`,
         '--text': `hsl(${h} 30% 18%)`,
@@ -61,6 +61,6 @@ export function themeVars(t: Theme, dark: boolean, accentOverride: string | null
         '--accent-text': '#ffffff',
         '--tile': '#ffffff',
         '--shadow': `0 8px 22px hsl(${h} 50% 50% / 0.16)`,
-        '--blob-opacity': '0.55',
+        '--blob-opacity': '0.85',
       };
 }

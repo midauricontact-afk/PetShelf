@@ -5,6 +5,7 @@ import type { MoldSection } from '../../core/filters';
 import type { Item, Pet } from '../../core/types';
 import { toggleCollapsed, toggleHave } from '../../state/store';
 import { useUI } from '../ctx';
+import { useScrollMargin } from '../useScrollMargin';
 import { IconChevron } from '../icons';
 import { PetImage } from './PetImage';
 import { Tile } from './Tile';
@@ -90,19 +91,15 @@ export const Grid = memo(function Grid({
   orderRef.current = order;
   const onOpen = useCallback((id: string) => ui.openPet(id, orderRef.current), [ui]);
 
-  const [scrollMargin, setScrollMargin] = useState(0);
-  // Position de la grille dans la page (le bandeau « cochage rapide » peut la décaler) : vérifiée à chaque rendu.
-  useLayoutEffect(() => {
-    if (!wrapRef.current || !active) return;
-    const m = Math.round(wrapRef.current.getBoundingClientRect().top + window.scrollY);
-    if (Math.abs(m - scrollMargin) > 1) setScrollMargin(m);
-  });
+  const scrollMargin = useScrollMargin(wrapRef, active);
 
   const virtualizer = useWindowVirtualizer({
     count: active ? rows.length : 0,
     estimateSize: (i) => (rows[i]?.kind === 'header' ? HEADER_H : rowH),
     overscan: 4,
     scrollMargin,
+    // Pas de rendu forcé à chaque événement de défilement : React regroupe, le défilement reste à 60 images/s.
+    useFlushSync: false,
   });
   // Tailles fixes connues d'avance : on réinitialise les mesures quand la mise en page change.
   useLayoutEffect(() => virtualizer.measure(), [virtualizer, rows, rowH]);
@@ -145,7 +142,7 @@ const SectionHeader = memo(function SectionHeader({ section: s, have, collapsed,
       aria-expanded={!collapsed}
     >
       <span className="mold-cover">
-        <PetImage pet={cover} photoUrl={coverUrl} />
+        <PetImage pet={cover} photoUrl={coverUrl} size={120} />
       </span>
       <span className="mold-text">
         <strong>{s.name}</strong>
@@ -158,7 +155,7 @@ const SectionHeader = memo(function SectionHeader({ section: s, have, collapsed,
           ))}
         </span>
         <span className="mold-bar">
-          <span style={{ width: `${pct}%` }} />
+          <span style={{ transform: `scaleX(${pct / 100})` }} />
         </span>
       </span>
       <IconChevron className="mold-chevron" width={18} height={18} />

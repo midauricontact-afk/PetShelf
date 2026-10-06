@@ -128,11 +128,11 @@ export function App() {
           <div className="app">
             <main className="content">
               {/* La collection reste en mémoire (cachée) : y revenir est instantané. Les autres onglets sont légers. */}
-              <div className={`tab-pane${tab === 'collection' ? ' shown' : ''}`} hidden={tab !== 'collection'}>
+              <div className="tab-pane" hidden={tab !== 'collection'}>
                 <CollectionScreen active={tab === 'collection'} />
               </div>
               {tab !== 'collection' && (
-                <div key={tab} className="tab-pane shown">
+                <div key={tab} className="tab-pane fade">
                   {tab === 'molds' && <MoldsScreen />}
                   {tab === 'lists' && <ListsScreen />}
                   {tab === 'progress' && <ProgressScreen />}

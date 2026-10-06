@@ -31,7 +31,7 @@ export const Tile = memo(function Tile({
     <div className={`tile${have ? ' have' : ''}${quick ? ' quick' : ''}`}>
       <button className="tile-main" onClick={() => (quick ? onToggle(pet.id) : onOpen(pet.id))} aria-label={`${petTitle(pet)} ${petNumber(pet)}${have ? ', je l’ai' : ''}`}>
         <div className="tile-img">
-          <PetImage pet={pet} photoUrl={photoUrl} />
+          <PetImage pet={pet} photoUrl={photoUrl} size={240} />
         </div>
         <div className="tile-meta">
           <span className="tile-num">

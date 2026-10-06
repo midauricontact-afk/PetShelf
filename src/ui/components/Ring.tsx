@@ -29,11 +29,11 @@ export function Ring({ pct, size = 120, stroke = 12, children, color = 'var(--ac
   );
 }
 
-/** Barre de progression fine. */
+/** Barre de progression fine (animée en « transform » : aucun recalcul de mise en page pendant l'animation). */
 export function Bar({ pct, color = 'var(--accent)' }: { pct: number; color?: string }) {
   return (
     <div className="bar">
-      <motion.div className="bar-fill" style={{ background: color }} initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ type: 'spring', stiffness: 80, damping: 20 }} />
+      <div className="bar-fill" style={{ background: color, transform: `scaleX(${Math.min(100, Math.max(0, pct)) / 100})` }} />
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
-import { memo, useDeferredValue, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { memo, useDeferredValue, useMemo, useRef, useState } from 'react';
 import { sfx } from '../../audio/sounds';
 import { fold } from '../../core/catalog';
 import { moldProgress, progressOf, type MoldProgress } from '../../core/stats';
@@ -7,6 +7,7 @@ import { setFilters, store } from '../../state/store';
 import { PetImage } from '../components/PetImage';
 import { Segmented } from '../components/primitives';
 import { useUI } from '../ctx';
+import { useScrollMargin } from '../useScrollMargin';
 import { IconClose, IconSearch } from '../icons';
 
 type Order = 'name' | 'progress' | 'size';
@@ -82,13 +83,8 @@ export const MoldsScreen = memo(function MoldsScreen() {
 
 function MoldList({ list, photoUrls, onOpen }: { list: MoldProgress[]; photoUrls: Map<string, string>; onOpen: (m: MoldProgress) => void }) {
   const ref = useRef<HTMLDivElement>(null);
-  const [margin, setMargin] = useState(0);
-  useLayoutEffect(() => {
-    if (!ref.current) return;
-    const m = Math.round(ref.current.getBoundingClientRect().top + window.scrollY);
-    if (Math.abs(m - margin) > 1) setMargin(m);
-  });
-  const v = useWindowVirtualizer({ count: list.length, estimateSize: () => ROW_H, overscan: 6, scrollMargin: margin });
+  const margin = useScrollMargin(ref);
+  const v = useWindowVirtualizer({ count: list.length, estimateSize: () => ROW_H, overscan: 6, scrollMargin: margin, useFlushSync: false });
   return (
     <div ref={ref} className="mold-list" style={{ height: v.getTotalSize() }}>
       {v.getVirtualItems().map((r) => {
@@ -98,7 +94,7 @@ function MoldList({ list, photoUrls, onOpen }: { list: MoldProgress[]; photoUrls
           <div key={m.mold} className="vrow" style={{ height: ROW_H, transform: `translateY(${r.start - margin}px)` }}>
             <button className={`mold-row${p.pct === 100 ? ' done' : ''}`} onClick={() => onOpen(m)}>
               <span className="mold-cover">
-                <PetImage pet={m.cover} photoUrl={photoUrls.get(m.cover.id)} />
+                <PetImage pet={m.cover} photoUrl={photoUrls.get(m.cover.id)} size={120} />
               </span>
               <span className="mold-text">
                 <strong>
@@ -115,7 +111,7 @@ function MoldList({ list, photoUrls, onOpen }: { list: MoldProgress[]; photoUrls
                   {p.pct === 100 && ' 🏆'}
                 </span>
                 <span className="mold-bar">
-                  <span style={{ width: `${p.pct}%` }} />
+                  <span style={{ transform: `scaleX(${p.pct / 100})` }} />
                 </span>
               </span>
               <span className="mold-pct">{p.pct} %</span>

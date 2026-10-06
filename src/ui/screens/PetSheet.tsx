@@ -77,7 +77,7 @@ export function PetSheet({ id, list, onClose, onNavigate }: { id: string | null;
                 }}
                 onClick={() => imageCount > 1 && (sfx.tick(), setImgIndex((i) => (i + 1) % imageCount))}
               >
-                <PetImage pet={pet} photoUrl={photoUrl} eager index={photoUrl ? 0 : imgIndex} />
+                <PetImage pet={pet} photoUrl={photoUrl} eager index={photoUrl ? 0 : imgIndex} size={800} />
                 {item.have && <span className="have-stamp">Je l’ai !</span>}
               </motion.div>
               {imageCount > 1 && (
